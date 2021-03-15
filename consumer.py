@@ -15,23 +15,43 @@ def readFile():
     
     # get information from file into JSON format
     body = lowest.get()['Body'].read()
-    return json.loads(body)
-    
 
+    #delete objcet from bucket
+    key = lowest.key
+    # lowest.delete()
 
+    return (key,json.loads(body))
 
-def createWidget():
-    # takes a file and creates a widget object 
-    print("Widget Created")
+def writeFile(key,data):
+    # s3 = boto3.client('s3')
+    s3 = boto3.resource('s3')
+    name = data["owner"]
+    name = name.replace(" ", "-")
 
-def writeFile():
-    print("Writing File")
+    path = "widgets/"+name+"/"+key
+
+    obj = s3.Object('usu-cs5260-hackley-web',path)
+    obj.put(Body=json.dumps(data))
+
+    print(path)
 
 def writeToDB():
     print("Writing to DB")
 
-json = readFile()
-print(json)
-# createWidget()
-# writeFile()
+#read the file and return the json object
+info = readFile()
+key = info[0]
+data = info[1]
+
+#determine what kind of request the json is
+if data["type"] == "create":
+    writeFile(key,data)
+
+if data["type"] == "delete":
+    print("This was a delete request")
+
+if data["type"] == "change":
+    print("This was a change request")
+
+
 # writeToDB()
