@@ -35,11 +35,16 @@ def writeFile(key,data, bucket):
 
     print(path)
 
-def writeToDB():
-    print("Writing to DB")
+def writeToDB(key, data):
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('widgets')
+    
+    table.put_item(Item=data)
+
+
 
 # syntax for writing to bucket:
-#   {bucket name to read from} bucket {bucket name to write to}
+#   {bucket to read from} bucket {bucket to write to}
 
 #syntax for writing to database:
 #   {bucket name to read from} db
@@ -49,7 +54,7 @@ if len(sys.argv) <= 1:
     #if no arguments
     bucket = 'usu-cs5260-hackley-requests'
     whereTo = 'usu-cs5260-hackley-web'
-    storage = 1
+    storage = 0
 
 elif sys.argv[2] == "db":
     bucket = sys.argv[1]
@@ -64,16 +69,17 @@ elif sys.argv[2] == "bucket":
 info = readFile(bucket)
 key = info[0]
 data = info[1]
+request = data["type"]
 
 #determine what kind of request the json is
-if data["type"] == "create":
+if request == "create":
     if storage == 1:
         writeFile(key,data, whereTo)
     elif storage == 0:
-        writeToDB()
+        writeToDB(key,data)
 
-if data["type"] == "delete":
+if request == "delete":
     print("This was a delete request")
 
-if data["type"] == "change":
+if request == "change":
     print("This was a change request")
